@@ -60,7 +60,7 @@ publishing {
             pom {
                 name.set("Toolbox")
                 description.set("Utils Library")
-                url.set("https://github.com/elyteLabs/Toolbox")
+                url.set("https://github.com/elytelabs/Toolbox")
 
                 licenses {
                     license {
