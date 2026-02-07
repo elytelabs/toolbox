@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.elytelabs.toolbox"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24
@@ -26,11 +26,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 }
 
@@ -51,7 +48,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "com.elytelabs.toolbox"
             artifactId = "toolbox"
-            version = "1.1.4"
+            version = "2.0.0"
             afterEvaluate {
                 from(components["release"])
             }
@@ -59,7 +56,7 @@ publishing {
 
             pom {
                 name.set("Toolbox")
-                description.set("Utils Library")
+                description.set("Modern Kotlin utility library for Android with extension functions for UI, intents, dialogs, and colors.")
                 url.set("https://github.com/elytelabs/toolbox")
 
                 licenses {
