@@ -4,7 +4,7 @@
 [![API](https://img.shields.io/badge/API-24%2B-brightgreen.svg)](https://android-arsenal.com/api?level=24)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-A modern Kotlin utility library for Android that provides clean extension functions for everyday tasks. Write less boilerplate, build faster.
+A modern Kotlin utility library for Android. Write less boilerplate, build faster.
 
 ## Features
 
@@ -51,24 +51,20 @@ Replace `Tag` with the latest release version.
 
 ### ColorGenerator
 
-Generate random Material Design colors or consistent avatar colors.
-
 ```kotlin
-// Get a random color
+// Random color
 val color = ColorGenerator.getRandomColor()
-view.setBackgroundColor(color)
 
-// Get consistent color for a string (great for avatars)
+// Avatar color (consistent for same input)
 val avatarColor = ColorGenerator.getColorForString("john@email.com")
-// Same string always returns same color
 
-// Get color with custom alpha (0-255)
+// Color with alpha (0-255)
 val transparentColor = ColorGenerator.getRandomColorWithAlpha(128)
 
 // Get color at specific index
 val colorAt = ColorGenerator.getColorAt(5)
 
-// Get all available colors
+// Get all colors
 val allColors = ColorGenerator.getColorList()
 ```
 
@@ -79,78 +75,53 @@ val allColors = ColorGenerator.getColorList()
 #### Toast
 
 ```kotlin
-// Short toast
-showToast("Hello!")
-
-// Long toast
-showLongToast("This message stays longer")
+UiKit.showToast(context, "Hello!")
+UiKit.showLongToast(context, "Longer message")
 ```
 
 #### Snackbar
 
 ```kotlin
-// Simple snackbar
-showSnackbar("Message saved")
+UiKit.showSnackbar(activity, "Message saved")
+UiKit.showSnackbar(activity, "Item deleted", "Undo") { /* undo action */ }
+UiKit.showErrorSnackbar(view, "Something went wrong!")
+UiKit.showSuccessSnackbar(view, "Upload complete!")
 
-// Snackbar with action
-showSnackbar("Item deleted", "Undo") {
-    // Undo action
-}
-
-// Error snackbar (red background)
-view.showErrorSnackbar("Something went wrong!")
-
-// Success snackbar (green background)
-view.showSuccessSnackbar("Upload complete!")
+// Custom colors
+UiKit.showErrorSnackbar(view, "Error!", backgroundColor = 0xFFE53935.toInt())
+UiKit.showSuccessSnackbar(view, "Done!", backgroundColor = 0xFF43A047.toInt())
 ```
 
 #### Clipboard
 
 ```kotlin
-// Copy to clipboard (auto shows toast on Android 12 and below)
-copyToClipboard("Text to copy")
-
-// Get clipboard content
-val text = getClipboardText()
+UiKit.copyToClipboard(context, "Text to copy")
+val text = UiKit.getClipboardText(context)
 ```
 
 #### View Visibility
 
 ```kotlin
-// Show/hide/invisible
-view.show()
-view.hide()        // GONE
-view.invisible()   // INVISIBLE (keeps layout space)
-
-// Conditional toggle
-view.showOrHide(isLoggedIn)
+UiKit.show(view)
+UiKit.hide(view)          // GONE
+UiKit.invisible(view)     // INVISIBLE
+UiKit.showOrHide(view, isLoggedIn)
 ```
 
 #### Keyboard
 
 ```kotlin
-// Hide keyboard from activity
-hideKeyboard()
-
-// Show keyboard for a view
-editText.showKeyboard()
-
-// Hide keyboard from a view
-editText.hideKeyboard()
+UiKit.hideKeyboard(activity)
+UiKit.showKeyboard(editText)
+UiKit.hideKeyboard(view)
 ```
 
 #### Validation
 
 ```kotlin
-// Email validation
-"test@example.com".isEmailValid()  // true
-"invalid-email".isEmailValid()     // false
-
-// Phone validation
-"+1234567890".isPhoneValid()       // true
-
-// URL validation
-"https://google.com".isUrlValid()  // true
+UiKit.isEmailValid("test@example.com")  // true
+UiKit.isPhoneValid("+1234567890")       // true
+UiKit.isUrlValid("https://google.com")  // true
 ```
 
 ---
@@ -160,55 +131,29 @@ editText.hideKeyboard()
 #### Share
 
 ```kotlin
-// Share text
-shareText("Check out this app!")
-
-// Share image
-shareImage(imageUri, "Caption text")
-
-// Share multiple images
-shareImages(arrayListOf(uri1, uri2), "Photos")
+IntentKit.shareText(context, "Check out this app!")
+IntentKit.shareImage(context, imageUri, "Caption")
+IntentKit.shareImages(context, arrayListOf(uri1, uri2))
 ```
 
 #### Web & Email
 
 ```kotlin
-// Open URL in browser
-openWebPage("https://elytelabs.vercel.app")
-
-// Send email
-sendEmail(
-    emails = arrayOf("support@app.com"),
-    subject = "Hello",
-    body = "Message body"
-)
-
-// Send feedback email with device info
-sendFeedbackEmail(
-    emails = arrayOf("support@app.com"),
-    appName = "MyApp"
-)
-// Auto-includes: app version, device model, Android version
+IntentKit.openWebPage(context, "https://google.com")
+IntentKit.sendEmail(context, arrayOf("support@app.com"), "Subject", "Body")
+IntentKit.sendFeedbackEmail(context, arrayOf("support@app.com"), "MyApp")
 ```
 
 #### App & Settings
 
 ```kotlin
-// Open Play Store page
-openPlayStore()
+IntentKit.openPlayStore(context)
+IntentKit.openAppSettings(context)
+IntentKit.openNotificationSettings(context)
+IntentKit.openLocationSettings(context)
 
-// Open app settings
-openAppSettings()
-
-// Open notification settings
-openNotificationSettings()
-
-// Open location settings
-openLocationSettings()
-
-// Get app version
-val versionName = getAppVersionName()  // "1.0.0"
-val versionCode = getAppVersionCode()  // 1
+val versionName = IntentKit.getAppVersionName(context)
+val versionCode = IntentKit.getAppVersionCode(context)
 ```
 
 ---
@@ -218,85 +163,60 @@ val versionCode = getAppVersionCode()  // 1
 #### Alert Dialogs
 
 ```kotlin
-// Simple alert
-showAlertDialog(
-    title = "Alert",
-    message = "This is an alert dialog"
-)
+DialogKit.showAlertDialog(context, "Title", "Message")
 
-// Confirmation dialog
-showConfirmDialog(
-    title = "Delete Item?",
-    message = "This action cannot be undone.",
-    onConfirm = { deleteItem() },
+DialogKit.showConfirmDialog(
+    context = context,
+    title = "Delete?",
+    message = "This cannot be undone.",
+    onConfirm = { delete() },
     onCancel = { /* optional */ }
 )
 
-// Three-button dialog
-showThreeButtonDialog(
+DialogKit.showThreeButtonDialog(
+    context = context,
     title = "Save Changes?",
     message = "You have unsaved changes.",
     positiveText = "Save",
     negativeText = "Discard",
     neutralText = "Cancel",
     onPositive = { save() },
-    onNegative = { discard() },
-    onNeutral = { /* cancel */ }
+    onNegative = { discard() }
 )
 ```
 
 #### Input Dialog
 
 ```kotlin
-showInputDialog(
+DialogKit.showInputDialog(
+    context = context,
     title = "Enter Name",
     hint = "Your name",
-    prefill = "John",
-    inputType = InputType.TYPE_CLASS_TEXT
-) { name ->
-    showToast("Hello, $name!")
-}
+    onSubmit = { name -> /* handle */ }
+)
 ```
 
 #### List Dialogs
 
 ```kotlin
-val options = arrayOf("Option A", "Option B", "Option C")
+val options = arrayOf("A", "B", "C")
 
-// Simple list
-showListDialog("Select", options) { index, item ->
-    showToast("Selected: $item")
-}
+DialogKit.showListDialog(context, "Select", options) { index, item -> }
 
-// Single choice with radio buttons
-showSingleChoiceDialog(
-    title = "Choose One",
-    items = options,
-    selectedIndex = 0
-) { index, item ->
-    // Handle selection
-}
+DialogKit.showSingleChoiceDialog(context, "Choose", options, selectedIndex = 0) { index, item -> }
 
-// Multi-choice with checkboxes
-showMultiChoiceDialog(
-    title = "Select Multiple",
-    items = options,
-    checkedItems = booleanArrayOf(false, true, false)
-) { indices, items ->
-    showToast("Selected: ${items.joinToString()}")
-}
+DialogKit.showMultiChoiceDialog(context, "Select", options) { indices, items -> }
 ```
 
 #### Loading Dialog
 
 ```kotlin
-// Simple loading dialog
-val dialog = showLoadingDialog("Please wait...")
+val dialog = DialogKit.showLoadingDialog(context, "Please wait...")
 // Later: dialog.dismiss()
 
-// Custom view loading dialog
+// With custom view
 val customView = layoutInflater.inflate(R.layout.dialog_progress, null)
-val dialog = showLoadingDialog(customView, message = "Exporting...")
+val dialog = DialogKit.showLoadingDialog(context, customView, "Exporting...")
 ```
 
 ---
@@ -304,15 +224,8 @@ val dialog = showLoadingDialog(customView, message = "Exporting...")
 ## Requirements
 
 - **Min SDK**: 24 (Android 7.0)
-- **Target SDK**: 35
+- **Target SDK**: 36
 - **Language**: Kotlin
-
-## Dependencies
-
-The library uses the following dependencies:
-- `androidx.core:core-ktx`
-- `androidx.appcompat:appcompat`
-- `com.google.android.material:material`
 
 ---
 
@@ -321,15 +234,5 @@ The library uses the following dependencies:
 ```
 Copyright 2024 ElyteLabs
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Licensed under the Apache License, Version 2.0
 ```

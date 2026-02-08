@@ -9,187 +9,195 @@ import android.util.Patterns
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 
-// <-- Validation Extensions -->
-
 /**
- * Checks if the string is a valid email address.
+ * UI utilities for Toast, Snackbar, Clipboard, View visibility, Keyboard, and Validation.
  */
-fun String.isEmailValid(): Boolean {
-    return Patterns.EMAIL_ADDRESS.matcher(this).matches()
-}
+object UiKit {
 
-/**
- * Checks if the string is a valid phone number.
- */
-fun String.isPhoneValid(): Boolean {
-    return Patterns.PHONE.matcher(this).matches()
-}
-
-/**
- * Checks if the string is a valid URL.
- */
-fun String.isUrlValid(): Boolean {
-    return Patterns.WEB_URL.matcher(this).matches()
-}
-
-// <-- Toast Extensions -->
-
-/**
- * Shows a short toast message.
- */
-fun Context.showToast(message: String) {
-    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-}
-
-/**
- * Shows a long toast message.
- */
-fun Context.showLongToast(message: String) {
-    Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-}
-
-// <-- Clipboard Extensions -->
-
-/**
- * Copies text to clipboard. Shows toast on Android 12 and below.
- */
-fun Context.copyToClipboard(text: String, label: String = "text") {
-    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    clipboard.setPrimaryClip(ClipData.newPlainText(label, text))
-    // Android 13+ shows its own UI
-    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-        showToast("Copied to clipboard")
+    /**
+     * Checks if the string is a valid email address.
+     */
+    fun isEmailValid(email: String): Boolean {
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
-}
 
-/**
- * Gets text from clipboard, or null if empty.
- */
-fun Context.getClipboardText(): String? {
-    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    return clipboard.primaryClip?.getItemAt(0)?.text?.toString()
-}
+    /**
+     * Checks if the string is a valid phone number.
+     */
+    fun isPhoneValid(phone: String): Boolean {
+        return Patterns.PHONE.matcher(phone).matches()
+    }
 
-// <-- View Visibility Extensions -->
+    /**
+     * Checks if the string is a valid URL.
+     */
+    fun isUrlValid(url: String): Boolean {
+        return Patterns.WEB_URL.matcher(url).matches()
+    }
 
-/**
- * Shows or hides the view based on condition.
- */
-fun View.showOrHide(show: Boolean) {
-    visibility = if (show) View.VISIBLE else View.GONE
-}
+    /**
+     * Shows a short toast message.
+     */
+    fun showToast(context: Context, message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
 
-/**
- * Makes the view visible.
- */
-fun View.show() {
-    visibility = View.VISIBLE
-}
+    /**
+     * Shows a long toast message.
+     */
+    fun showLongToast(context: Context, message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    }
 
-/**
- * Hides the view (GONE).
- */
-fun View.hide() {
-    visibility = View.GONE
-}
+    /**
+     * Copies text to clipboard. Shows toast on Android 12 and below.
+     */
+    fun copyToClipboard(context: Context, text: String, label: String = "text") {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText(label, text))
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+            showToast(context, "Copied to clipboard")
+        }
+    }
 
-/**
- * Makes the view invisible (keeps layout space).
- */
-fun View.invisible() {
-    visibility = View.INVISIBLE
-}
+    /**
+     * Gets text from clipboard, or null if empty.
+     */
+    fun getClipboardText(context: Context): String? {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        return clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+    }
 
-// <-- Keyboard Extensions -->
+    /**
+     * Shows or hides the view based on condition.
+     */
+    fun showOrHide(view: View, show: Boolean) {
+        view.visibility = if (show) View.VISIBLE else View.GONE
+    }
 
-/**
- * Hides the soft keyboard.
- */
-fun Activity.hideKeyboard() {
-    currentFocus?.let { view ->
-        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    /**
+     * Makes the view visible.
+     */
+    fun show(view: View) {
+        view.visibility = View.VISIBLE
+    }
+
+    /**
+     * Hides the view (GONE).
+     */
+    fun hide(view: View) {
+        view.visibility = View.GONE
+    }
+
+    /**
+     * Makes the view invisible (keeps layout space).
+     */
+    fun invisible(view: View) {
+        view.visibility = View.INVISIBLE
+    }
+
+    /**
+     * Hides the soft keyboard.
+     */
+    fun hideKeyboard(activity: Activity) {
+        activity.currentFocus?.let { view ->
+            val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
+        }
+    }
+
+    /**
+     * Shows the soft keyboard for this view.
+     */
+    fun showKeyboard(view: View) {
+        view.requestFocus()
+        val imm = view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
+    }
+
+    /**
+     * Hides the soft keyboard from this view.
+     */
+    fun hideKeyboard(view: View) {
+        val imm = view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
-}
 
-/**
- * Shows the soft keyboard for this view.
- */
-fun View.showKeyboard() {
-    requestFocus()
-    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    imm.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
-}
+    /**
+     * Shows a simple snackbar.
+     */
+    fun showSnackbar(view: View, message: String, duration: Int = Snackbar.LENGTH_SHORT) {
+        Snackbar.make(view, message, duration).show()
+    }
 
-/**
- * Hides the soft keyboard from this view.
- */
-fun View.hideKeyboard() {
-    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    imm.hideSoftInputFromWindow(windowToken, 0)
-}
+    /**
+     * Shows a snackbar with an action button.
+     */
+    fun showSnackbar(
+        view: View,
+        message: String,
+        actionText: String,
+        duration: Int = Snackbar.LENGTH_LONG,
+        action: () -> Unit
+    ) {
+        Snackbar.make(view, message, duration)
+            .setAction(actionText) { action() }
+            .show()
+    }
 
-// <-- Snackbar Extensions -->
+    /**
+     * Shows a snackbar from Activity's root view.
+     */
+    fun showSnackbar(activity: Activity, message: String, duration: Int = Snackbar.LENGTH_SHORT) {
+        showSnackbar(activity.findViewById(android.R.id.content), message, duration)
+    }
 
-/**
- * Shows a simple snackbar.
- */
-fun View.showSnackbar(message: String, duration: Int = Snackbar.LENGTH_SHORT) {
-    Snackbar.make(this, message, duration).show()
-}
+    /**
+     * Shows a snackbar with action from Activity's root view.
+     */
+    fun showSnackbar(
+        activity: Activity,
+        message: String,
+        actionText: String,
+        duration: Int = Snackbar.LENGTH_LONG,
+        action: () -> Unit
+    ) {
+        showSnackbar(activity.findViewById(android.R.id.content), message, actionText, duration, action)
+    }
 
-/**
- * Shows a snackbar with an action button.
- */
-fun View.showSnackbar(
-    message: String,
-    actionText: String,
-    duration: Int = Snackbar.LENGTH_LONG,
-    action: () -> Unit
-) {
-    Snackbar.make(this, message, duration)
-        .setAction(actionText) { action() }
-        .show()
-}
+    /**
+     * Shows an error-styled snackbar (red background).
+     * @param backgroundColor Custom background color (default: vibrant red #D32F2F)
+     * @param textColor Custom text color (default: white)
+     */
+    fun showErrorSnackbar(
+        view: View,
+        message: String,
+        backgroundColor: Int = 0xFFD32F2F.toInt(),
+        textColor: Int = 0xFFFFFFFF.toInt()
+    ) {
+        Snackbar.make(view, message, Snackbar.LENGTH_LONG).apply {
+            setBackgroundTint(backgroundColor)
+            setTextColor(textColor)
+        }.show()
+    }
 
-/**
- * Shows a snackbar from Activity's root view.
- */
-fun Activity.showSnackbar(message: String, duration: Int = Snackbar.LENGTH_SHORT) {
-    findViewById<View>(android.R.id.content).showSnackbar(message, duration)
-}
-
-/**
- * Shows a snackbar with action from Activity's root view.
- */
-fun Activity.showSnackbar(
-    message: String,
-    actionText: String,
-    duration: Int = Snackbar.LENGTH_LONG,
-    action: () -> Unit
-) {
-    findViewById<View>(android.R.id.content).showSnackbar(message, actionText, duration, action)
-}
-
-/**
- * Shows an error-styled snackbar (red background).
- */
-fun View.showErrorSnackbar(message: String) {
-    Snackbar.make(this, message, Snackbar.LENGTH_LONG).apply {
-        setBackgroundTint(ContextCompat.getColor(context, android.R.color.holo_red_dark))
-        setTextColor(ContextCompat.getColor(context, android.R.color.white))
-    }.show()
-}
-
-/**
- * Shows a success-styled snackbar (green background).
- */
-fun View.showSuccessSnackbar(message: String) {
-    Snackbar.make(this, message, Snackbar.LENGTH_SHORT).apply {
-        setBackgroundTint(ContextCompat.getColor(context, android.R.color.holo_green_dark))
-        setTextColor(ContextCompat.getColor(context, android.R.color.white))
-    }.show()
+    /**
+     * Shows a success-styled snackbar (green background).
+     * @param backgroundColor Custom background color (default: vibrant green #388E3C)
+     * @param textColor Custom text color (default: white)
+     */
+    fun showSuccessSnackbar(
+        view: View,
+        message: String,
+        backgroundColor: Int = 0xFF388E3C.toInt(),
+        textColor: Int = 0xFFFFFFFF.toInt()
+    ) {
+        Snackbar.make(view, message, Snackbar.LENGTH_SHORT).apply {
+            setBackgroundTint(backgroundColor)
+            setTextColor(textColor)
+        }.show()
+    }
 }
