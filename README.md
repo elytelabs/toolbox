@@ -140,8 +140,10 @@ IntentKit.shareImages(context, arrayListOf(uri1, uri2))
 
 ```kotlin
 IntentKit.openWebPage(context, "https://google.com")
+IntentKit.openUriWithFallback(context, "market://details?id=com.example", "https://play.google.com/store/apps/details?id=com.example")
 IntentKit.sendEmail(context, arrayOf("support@app.com"), "Subject", "Body")
 IntentKit.sendFeedbackEmail(context, arrayOf("support@app.com"), "MyApp")
+// Subject: "Feedback for MyApp v 1.0.0"
 ```
 
 #### App & Settings
@@ -232,7 +234,7 @@ val dialog = DialogKit.showLoadingDialog(context, customView, "Exporting...")
 ## License
 
 ```
-Copyright 2024 ElyteLabs
+Copyright 2026 ElyteLabs
 
 Licensed under the Apache License, Version 2.0
 ```

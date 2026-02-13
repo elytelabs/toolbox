@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.elytelabs.toolbox
 
 import android.content.Context
@@ -13,15 +15,36 @@ import androidx.core.net.toUri
 object IntentKit {
 
     /**
+     * Safely starts an intent.
+     */
+    private inline fun safeStartIntent(context: Context, intentBuilder: () -> Intent) {
+        try {
+            val intent = intentBuilder()
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            UiKit.showToast(context, "No app found to handle this action")
+        }
+    }
+
+    /**
      * Opens a URL in the default browser.
      */
     fun openWebPage(context: Context, url: String) {
+        safeStartIntent(context) {
+            Intent(Intent.ACTION_VIEW, url.toUri())
+        }
+    }
+
+    /**
+     * Opens a URI with a fallback URL if the primary URI fails.
+     * Useful for deep links (e.g. market://) with web fallbacks.
+     */
+    fun openUriWithFallback(context: Context, primaryUri: String, fallbackUrl: String) {
         try {
-            val webpage = url.toUri()
-            val intent = Intent(Intent.ACTION_VIEW, webpage)
+            val intent = Intent(Intent.ACTION_VIEW, primaryUri.toUri())
             context.startActivity(intent)
         } catch (e: Exception) {
-            UiKit.showToast(context, "No app can handle this action")
+            openWebPage(context, fallbackUrl)
         }
     }
 
@@ -29,37 +52,40 @@ object IntentKit {
      * Shares text via the system share sheet.
      */
     fun shareText(context: Context, text: String, chooserTitle: String = "Share via") {
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, text)
+        safeStartIntent(context) {
+            Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, text)
+            }.let { Intent.createChooser(it, chooserTitle) }
         }
-        context.startActivity(Intent.createChooser(intent, chooserTitle))
     }
 
     /**
      * Shares an image with optional text.
      */
     fun shareImage(context: Context, imageUri: Uri, text: String? = null, chooserTitle: String = "Share via") {
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "image/*"
-            putExtra(Intent.EXTRA_STREAM, imageUri)
-            text?.let { putExtra(Intent.EXTRA_TEXT, it) }
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        safeStartIntent(context) {
+            Intent(Intent.ACTION_SEND).apply {
+                type = "image/*"
+                putExtra(Intent.EXTRA_STREAM, imageUri)
+                text?.let { putExtra(Intent.EXTRA_TEXT, it) }
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }.let { Intent.createChooser(it, chooserTitle) }
         }
-        context.startActivity(Intent.createChooser(intent, chooserTitle))
     }
 
     /**
      * Shares multiple images with optional text.
      */
     fun shareImages(context: Context, imageUris: ArrayList<Uri>, text: String? = null, chooserTitle: String = "Share via") {
-        val intent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
-            type = "image/*"
-            putParcelableArrayListExtra(Intent.EXTRA_STREAM, imageUris)
-            text?.let { putExtra(Intent.EXTRA_TEXT, it) }
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        safeStartIntent(context) {
+            Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                type = "image/*"
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM, imageUris)
+                text?.let { putExtra(Intent.EXTRA_TEXT, it) }
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }.let { Intent.createChooser(it, chooserTitle) }
         }
-        context.startActivity(Intent.createChooser(intent, chooserTitle))
     }
 
     /**
@@ -69,7 +95,7 @@ object IntentKit {
         context: Context,
         emails: Array<String>,
         appName: String,
-        subject: String = "$appName Feedback"
+        subject: String = "Feedback for $appName v ${getAppVersionName(context)}"
     ) {
         val body = buildString {
             appendLine("---------------------------------------------------------------")
@@ -89,16 +115,13 @@ object IntentKit {
      * Opens email app with pre-filled fields.
      */
     fun sendEmail(context: Context, emails: Array<String>, subject: String, body: String = "") {
-        try {
-            val intent = Intent(Intent.ACTION_SENDTO).apply {
+        safeStartIntent(context) {
+            Intent(Intent.ACTION_SENDTO).apply {
                 data = "mailto:".toUri()
                 putExtra(Intent.EXTRA_EMAIL, emails)
                 putExtra(Intent.EXTRA_SUBJECT, subject)
                 putExtra(Intent.EXTRA_TEXT, body)
             }
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            UiKit.showToast(context, "No email app found")
         }
     }
 
@@ -106,28 +129,31 @@ object IntentKit {
      * Opens the app's settings page.
      */
     fun openAppSettings(context: Context) {
-        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-            data = Uri.fromParts("package", context.packageName, null)
+        safeStartIntent(context) {
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", context.packageName, null)
+            }
         }
-        context.startActivity(intent)
     }
 
     /**
      * Opens the Play Store page for this app.
      */
     fun openPlayStore(context: Context, packageName: String = context.packageName) {
-        try {
-            context.startActivity(Intent(Intent.ACTION_VIEW, "market://details?id=$packageName".toUri()))
-        } catch (e: Exception) {
-            openWebPage(context, "https://play.google.com/store/apps/details?id=$packageName")
-        }
+        openUriWithFallback(
+            context,
+            "market://details?id=$packageName",
+            "https://play.google.com/store/apps/details?id=$packageName"
+        )
     }
 
     /**
      * Opens location settings.
      */
     fun openLocationSettings(context: Context) {
-        context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+        safeStartIntent(context) {
+            Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+        }
     }
 
     /**
@@ -135,10 +161,11 @@ object IntentKit {
      */
     fun openNotificationSettings(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-                putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+            safeStartIntent(context) {
+                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                    putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                }
             }
-            context.startActivity(intent)
         } else {
             openAppSettings(context)
         }
@@ -149,11 +176,15 @@ object IntentKit {
      */
     @Suppress("DEPRECATION")
     fun getAppVersionCode(context: Context): Long {
-        val info = context.packageManager.getPackageInfo(context.packageName, 0)
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            info.longVersionCode
-        } else {
-            info.versionCode.toLong()
+        return try {
+            val info = context.packageManager.getPackageInfo(context.packageName, 0)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                info.longVersionCode
+            } else {
+                info.versionCode.toLong()
+            }
+        } catch (e: Exception) {
+            -1L
         }
     }
 
@@ -161,6 +192,10 @@ object IntentKit {
      * Returns the app version name.
      */
     fun getAppVersionName(context: Context): String {
-        return context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "Unknown"
+        return try {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "Unknown"
+        } catch (e: Exception) {
+            "Unknown"
+        }
     }
 }
