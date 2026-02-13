@@ -157,6 +157,26 @@ object IntentKit {
     }
 
     /**
+     * Opens the map at specific coordinates.
+     */
+    fun openMap(context: Context, lat: Double, lng: Double, label: String? = null) {
+        val uriString = if (label != null) {
+            "geo:0,0?q=$lat,$lng($label)"
+        } else {
+            "geo:$lat,$lng"
+        }
+        openUriWithFallback(context, uriString, "https://maps.google.com/?q=$lat,$lng")
+    }
+
+    /**
+     * Opens the map with a query.
+     */
+    fun openMap(context: Context, query: String) {
+        val encodedQuery = Uri.encode(query)
+        openUriWithFallback(context, "geo:0,0?q=$encodedQuery", "https://maps.google.com/?q=$encodedQuery")
+    }
+
+    /**
      * Opens notification settings for this app (API 26+).
      */
     fun openNotificationSettings(context: Context) {

@@ -153,6 +153,8 @@ IntentKit.openPlayStore(context)
 IntentKit.openAppSettings(context)
 IntentKit.openNotificationSettings(context)
 IntentKit.openLocationSettings(context)
+IntentKit.openMap(context, 40.7128, -74.0060, "New York")
+IntentKit.openMap(context, "Eiffel Tower, Paris")
 
 val versionName = IntentKit.getAppVersionName(context)
 val versionCode = IntentKit.getAppVersionCode(context)
