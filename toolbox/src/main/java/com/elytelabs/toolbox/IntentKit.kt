@@ -104,7 +104,8 @@ object IntentKit {
             appendLine("App Name: $appName")
             appendLine("App Version: ${getAppVersionName(context)} (${getAppVersionCode(context)})")
             appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL}")
-            appendLine("Android Version: ${Build.VERSION.SDK_INT}")
+            appendLine("Android Version: ${Build.VERSION.RELEASE}")
+            appendLine("Android Sdk: ${Build.VERSION.SDK_INT}")
             appendLine("---------------------------------------------------------------")
             appendLine()
         }
