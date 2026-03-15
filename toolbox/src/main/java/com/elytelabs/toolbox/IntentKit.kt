@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package com.elytelabs.toolbox
 
 import android.content.Context

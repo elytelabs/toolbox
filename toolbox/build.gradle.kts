@@ -48,7 +48,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "com.elytelabs.toolbox"
             artifactId = "toolbox"
-            version = "2.1.3"
+            version = "2.1.4"
             afterEvaluate {
                 from(components["release"])
             }
